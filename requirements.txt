@@ -4,3 +4,9 @@ spacy
 youtube-transcript-api
 transformers
 django
+langchain
+InstructorEmbedding
+sentence-transformers
+faiss-cpu
+huggingface_hub
+transformers
