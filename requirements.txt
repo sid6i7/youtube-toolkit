@@ -1,0 +1,6 @@
+torch
+nltk
+spacy
+youtube-transcript-api
+transformers
+django

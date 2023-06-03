@@ -1,5 +1,6 @@
 from config import *
 from transformers import pipeline
+from nltk.tokenize import sent_tokenize
 
 class Summarizer:
     """
@@ -8,7 +9,7 @@ class Summarizer:
     def __init__(self) -> None:
         self.model = pipeline("summarization", model=SUMMARIZER_TRANSFORMERS_MODEL, tokenizer=SUMMARIZER_TRANSFORMERS_MODEL)
     
-    def generate_summary(self, sentences, ratio=3):
+    def generate_summary(self, text, ratio=3):
         """Generates summary of a list of sentences
 
         Args:
@@ -18,6 +19,7 @@ class Summarizer:
         Returns:
             String: Summarized paragraph
         """
+        sentences = sent_tokenize(text)
         summary = ''
         para = ''
         for sentence in sentences:    

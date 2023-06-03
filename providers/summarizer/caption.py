@@ -9,6 +9,7 @@ nltk.download('wordnet')
 from nltk.stem import WordNetLemmatizer
 import torch
 from nltk import sent_tokenize
+from config import UNKNOWN_TOKEN
 
 class Caption:
     """
@@ -49,7 +50,8 @@ class Caption:
             
         if preprocess:
             caption = self.preprocess_caption(caption)
-            
+
+        caption = caption.replace(UNKNOWN_TOKEN, '').strip()
         return self.sent_segmentation(caption)
         
     def sent_segmentation(self, caption):
