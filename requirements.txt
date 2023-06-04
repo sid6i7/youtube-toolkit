@@ -10,3 +10,6 @@ sentence-transformers
 faiss-cpu
 huggingface_hub
 transformers
+chromadb
+accelerate
+bitsandbytes
