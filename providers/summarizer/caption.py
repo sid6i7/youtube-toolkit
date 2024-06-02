@@ -1,15 +1,15 @@
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
 import re
+from urllib.parse import urlparse, parse_qs
 import nltk
-nltk.download('punkt')
+nltk.download('punkt', halt_on_error=False)
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 nltk.download('wordnet')
 from nltk.stem import WordNetLemmatizer
 import torch
 from nltk import sent_tokenize
-from config import UNKNOWN_TOKEN
 
 class Caption:
     """
@@ -21,8 +21,29 @@ class Caption:
         self.lemmatizer = WordNetLemmatizer()
         model, example_texts, languages, punct, apply_te = torch.hub.load(repo_or_dir='snakers4/silero-models', model='silero_te')
         self.sent_seg_model = apply_te
+    
+    def get_video_id(self, url):
+        parsed_url = urlparse(url)
         
-    def get_caption(self, videoId, preprocess=False):
+        # Check if it's a shortened YouTube URL
+        if parsed_url.netloc == 'youtu.be':
+            video_id = parsed_url.path[1:]  # Remove the leading slash
+            return video_id
+        
+        query_params = parse_qs(parsed_url.query)
+        
+        if 'v' in query_params:
+            return query_params['v'][0]
+        else:
+            # If the 'v' parameter is not present, check if it's in the path
+            path_parts = parsed_url.path.split('/')
+            if len(path_parts) > 1:
+                return path_parts[1]
+        
+        # If no video ID found
+        return None
+        
+    def get_caption(self, link, preprocess=False):
         """Fetches transcripts of youtube videos using video ID
 
         Args:
@@ -35,6 +56,7 @@ class Caption:
         
         caption = ''
         try:
+            videoId = self.get_video_id(link)
             # captions in all available languages
             transcripts = self.transcriber.list_transcripts(video_id=videoId)
             try:
@@ -50,8 +72,7 @@ class Caption:
             
         if preprocess:
             caption = self.preprocess_caption(caption)
-
-        caption = caption.replace(UNKNOWN_TOKEN, '').strip()
+            
         return self.sent_segmentation(caption)
         
     def sent_segmentation(self, caption):
@@ -65,8 +86,8 @@ class Caption:
         """
         
         caption = self.sent_seg_model(caption, lan='en')
-        return sent_tokenize(caption)
-        # return caption
+        # return sent_tokenize(caption)
+        return caption
 
     def preprocess_caption(self, caption):
         """Applies some basic NLP text pre-processing
@@ -104,7 +125,3 @@ class Caption:
         caption = ' '.join(filtered_tokens)
 
         return caption
-        
-        
-        
-        
